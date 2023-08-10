@@ -1,0 +1,77 @@
+@import './base.css';
+
+#app {
+  font-weight: normal;
+
+}
+
+a,
+.green {
+  text-decoration: none;
+  color: hsla(160, 100%, 37%, 1);
+  transition: 0.4s;
+}
+
+@media (hover: hover) {
+  a:hover {
+    background-color: hsla(160, 100%, 37%, 0.2);
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    background: radial-gradient(circle at bottom right,
+        rgb(69, 69, 69), rgb(37, 37, 37), rgb(21, 21, 21), rgb(0, 0, 0)), 100%;
+    margin: 0px;
+    height: 100vh;
+    color: rgb(235, 235, 235);
+  }
+
+  #app {
+    display: flex;
+    flex-direction: column;
+    background-color: inherit;
+    max-height: 100%;
+    padding: 5px;
+    box-sizing: border-box;
+  }
+
+  .dark-gray {
+    background-color: rgb(33, 33, 33);
+  }
+
+  .dark-green {
+    background-color: hsla(160, 100%, 37%, 1);
+  }
+
+  .black {
+    background-color: rgb(11, 11, 11);
+  }
+
+  .card-radius {
+    border-radius: 15px;
+    box-sizing: border-box;
+  }
+
+  .btn:hover {
+    scale: 1.05;
+  }
+
+  .btn:active {
+    scale: 0.95
+  }
+
+  .icon {
+    width: 48px;
+    height: 48px;
+    vertical-align: middle;
+  }
+
+  .icon:hover {
+    scale: 1.1;
+  }
+
+  .icon:active {
+    scale: 0.9
+  }
+}
