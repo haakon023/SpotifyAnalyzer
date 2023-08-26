@@ -14,8 +14,10 @@ async mounted() {
   this.SignedIn = await this.RequestAccessToken();
 },
   methods: {
-    SignInToSpotify() {
-      RequestSignInToSpotify();
+    async SignInToSpotify() {
+      var path = await RequestSignInToSpotify();
+      this.navigateTo(path);
+      
     },
     async RequestAccessToken(){
       return await RequestAccessTokenFromSpotify()
@@ -23,6 +25,9 @@ async mounted() {
     GoToHome()
     {
       this.$router.push("/");
+    },
+    navigateTo(to) {
+      window.location.href = to;
     }
   },
 };
