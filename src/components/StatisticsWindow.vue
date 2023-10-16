@@ -1,7 +1,7 @@
 <script lang="js">
 import { ref } from 'vue';
 import RefreshCircle from '../assets/icons/RefreshCircle.vue';
-import { GetProfilePlaylists } from '../javascript/SpotifyRequests';
+import { GetProfilePlaylists, GetSpotifyTrackForPlaylist } from '../javascript/SpotifyRequests';
 export default {
     props:{
         title: String,
@@ -10,33 +10,59 @@ export default {
     },
     data(){
       const playlistsCount = ref(0);
+      const playlists = ref(0);
+      const tracksCount = ref(0);
       return{
-        playlistsCount
+        playlistsCount,
+        playlists,
+        tracksCount
       }
     },
     async mounted() {
-      await this.getAmountOfPlaylists()
+      await this.initialize();
 
     },
     components:{
         RefreshCircle,
     },
     methods: {
-      getAmountOfSongs(){
-
+      async initialize()
+      {
+        await this.getAmountOfPlaylists()
+        await this.getAmountOfSongs();
+      },
+      async getAmountOfSongs(){
+        let total = 0;
+        try{
+          for(let i = 0; i < this.playlistsCount; i++)
+          {
+            if (this.playlists[i].id === undefined || this.playlists[i].id === ""){
+              continue;
+            }
+            const tracks = await GetSpotifyTrackForPlaylist(this.token, this.playlists[i].id);
+            console.log(tracks);
+            if(tracks === undefined)
+              continue;
+            total += tracks.length;
+          }
+        }catch(error)
+        {
+          console.log(error)
+        }
+        this.tracksCount = total;
+        console.log(tracksCount)
       },
       async getAmountOfPlaylists()
       {
         try {
 
           const playlists = await GetProfilePlaylists(this.id, this.token);
+          this.playlists = playlists.items;
           this.playlistsCount = playlists.items.length;
-          console.log(playlists)
         } catch (error) {
           console.log(error)
         }
-
-      }
+      },
     },
     computed() {
     }
@@ -61,7 +87,7 @@ export default {
     <div class="NumberStatistics">
       <div>
         <h3># Songs</h3>
-        <p>{{ getTrackAmount }}</p>
+        <p>{{ tracksCount }}</p>
       </div>
       <div>
         <h3># Playlists</h3>

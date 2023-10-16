@@ -26,7 +26,6 @@ export async function GetSpotifyTrackForPlaylist(token, playlistId)
         while(hasMoreTracks)
     {
         let response = await useFetchCached("playlist", url, request)
-        console.log(response)
         //let data = await response.json();
         response.items.forEach(track => {
             tracks.push(track)
@@ -53,6 +52,8 @@ export async function GetPlaybackState(token)
             Authorization: 'Bearer ' + token
         }
     });
+    if (response.status != "Ok")
+        return null;
     return await response.json();
 }
 

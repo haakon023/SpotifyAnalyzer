@@ -58,6 +58,8 @@ export default {
         playlist.tracks.items = tracks;
         tracks.forEach(t => this.allTracks.push(t));
       }
+
+      console.log('fetching all tracks');
       this.statisticsStore.setHasData(true);
       this.statisticsStore.setSongAmount(this.allTracks.length);
     },
@@ -86,7 +88,7 @@ export default {
 </script>
 
 <template>
-  <main>
+  <main class="md-container w-full">
     <div class="main-frame-tabs">
       <div class="tab">
         <h2>Overview</h2>

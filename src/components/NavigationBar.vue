@@ -22,6 +22,10 @@ export default {
       store.removeSession();
       this.$router.push("/introduction");
     },
+    signin()
+    {
+      this.$router.push('/signin');
+    },  
     async IsSignedInAndGetName() {
       const status = await this.store.checkSessionValid()
       if(status !== undefined && status.ok){
@@ -63,7 +67,7 @@ export default {
       </div>
     </div>
     <div v-else>
-      <h1>Sign in</h1>
+      <router-link to="/signin">Sign in</router-link>
     </div>
   </div>
 </template>

@@ -47,6 +47,8 @@ export default({
         },
         async getPlayState(){
             this.state = await GetPlaybackState(this.getToken);
+            if(this.state == null)
+              return;
             this.isPlaying = this.state.is_playing;
             if(!this.isPlaying)
                 return;
@@ -74,7 +76,6 @@ export default({
         },
         async SkipToNext()
         {
-          console.log("skip next")
           await SpotifySkip(this.getToken);
         },
         async SkipToPrevious()
@@ -85,13 +86,13 @@ export default({
     computed: {
         getSongName()
         {
-            if(this.state.item === undefined)
+            if(this.state === null || this.state.item === undefined)
                 return "";
             return this.state.item.name
         },
         getArtists()
         {
-            if(this.state.item === undefined)
+            if(this.state === null || this.state.item === undefined)
                 return "";
 
             let artists = []
@@ -104,7 +105,7 @@ export default({
        },
        getTotalSongTime()
        {
-        if(this.state.item === undefined)
+        if(this.state === null || this.state.item === undefined)
             return;
         let length = moment(this.state.item.duration_ms).format("m:ss");
         return length;
@@ -135,28 +136,28 @@ export default({
 </script>
 
 <template>
-  <div class="playback dark-gray card-radius">
-    <div class="song_details">
+  <div class="xl-container grid justify-between grid-cols-3 grid-rows-2 row-start-4 col-start-1 col-span-2 dark-gray card-radius">
+    <div class="song_details col-start-1">
       <h3 style="font-weight: bold; padding: 0; margin: 0">{{ getSongName }}</h3>
       <p>
         <span v-for="artist in getArtists" v-bind:key="artist">{{ artist }}</span>
       </p>
     </div>
-    <div class="controls">
-      <skipPreviousIcon v-on:click="SkipToPrevious" class="icon"></skipPreviousIcon>
+    <div class="flex justify-center col-row-1 col-start-2">
+      <skipPreviousIcon v-on:click="SkipToPrevious" class="h-12 w-12"></skipPreviousIcon>
       <playCircle
         v-on:click="PlayPauseClicked"
         v-if="!isPlaying"
-        class="icon"
+        class="h-12 w-12"
       ></playCircle>
       <pauseCircle
         v-on:click="PlayPauseClicked"
         v-if="isPlaying"
-        class="icon"
+        class="h-12 w-12"
       ></pauseCircle>
-      <skipNextIcon v-on:click="SkipToNext" class="icon"></skipNextIcon>
+      <skipNextIcon v-on:click="SkipToNext" class="h-12 w-12"></skipNextIcon>
     </div>
-    <div class="slider">
+    <div class="slider col-row-2 col-start-2">
       <p class="slider-text" style="grid-column: 1">
         {{ getSongTimeInMinutes }}
       </p>
@@ -169,19 +170,6 @@ export default({
 </template>
 
 <style scoped>
-.playback {
-  display: grid;
-  width: 100%;
-  height: 100%;
-  grid-column: 1 / 4;
-  grid-row: 4;
-  grid-template-rows: auto 40px;
-  gap: 0px;
-  grid-template-columns: repeat(3, 1fr);
-  padding-right: 1em;
-  padding-left: 1em;
-  box-sizing: border-box;
-}
 
 .slider {
   display: grid;
@@ -205,15 +193,6 @@ export default({
   background-color: rgb(160, 160, 160);
   height: 10px;
   margin: auto;
-}
-
-.controls {
-  grid-column: 2;
-  align-self: center;
-  text-align: center;
-  height: 100%;
-  padding-top: 5px;
-  margin-bottom: -10px;
 }
 
 .song_details {
