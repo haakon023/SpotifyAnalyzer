@@ -2,7 +2,7 @@
 import {storeToRefs} from 'pinia'
 import { SessionStore } from '../stores/SessionStore';
 import { StatisticsStore } from '../stores/StatisticsStore';
-import { GetProfilePlaylists, GetSpotifyTrackForPlaylist } from '../javascript/SpotifyRequests.js'
+import { GetProfilePlaylists } from '../javascript/SpotifyRequests.js'
 import PlaybackView from "./PlaybackView.vue";
 
 import StatisticsWindow from './StatisticsWindow.vue';
@@ -15,7 +15,7 @@ export default {
   data() {
     const { getProfileData, getToken} = storeToRefs(SessionStore());
     const statisticsStore = StatisticsStore();
-    const {getHasData, getSongAmount, getPlaylistAmount} = storeToRefs(StatisticsStore());
+    const {getPlaylistAmount} = storeToRefs(StatisticsStore());
     let playlists = [];
     let allTracks = [];
     return {
@@ -24,8 +24,6 @@ export default {
       playlists,
       allTracks,
       statisticsStore,
-      getHasData,
-      getSongAmount,
       getPlaylistAmount
     }
   },
@@ -47,22 +45,7 @@ export default {
       this.playlists = playlists;
       this.statisticsStore.setPlaylistAmount(playlists.length)
     },
-    async getTracks(){
-      await this.FetchProfilePlaylists();
-      const token = this.getToken
-      this.allTracks = [];
-      for(let i = 0; i < this.playlists.length; i++)
-      {
-        let playlist = this.playlists[i]
-        const tracks = await GetSpotifyTrackForPlaylist(token, playlist.id)
-        playlist.tracks.items = tracks;
-        tracks.forEach(t => this.allTracks.push(t));
-      }
 
-      console.log('fetching all tracks');
-      this.statisticsStore.setHasData(true);
-      this.statisticsStore.setSongAmount(this.allTracks.length);
-    },
   },computed: {
       FilteredPlaylists()
       {
@@ -71,14 +54,7 @@ export default {
         }
           return true;
       },
-      getTrackAmount(){
-        if(!this.getHasData)
-        {
-          this.getTracks();
-          return;
-        }
-        return this.getSongAmount;
-      },
+
       getPlaylistCount(){
         return this.getPlaylistAmount
       }

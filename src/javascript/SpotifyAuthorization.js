@@ -14,7 +14,7 @@ export async function RequestAccessTokenFromSpotify() {
     let body = new URLSearchParams({
       grant_type: 'authorization_code',
       code: code,
-      redirect_uri: 'https://spotify.haakonfinstad.com/signin',
+      redirect_uri: 'http://localhost:5173/signin',
       client_id: '896c365d23084749ac25e60fc68a2910',
       code_verifier: codeVerifier
     })
@@ -96,7 +96,7 @@ export function RequestSignInToSpotify() {
             response_type: 'code',
             client_id: "896c365d23084749ac25e60fc68a2910",
             scope: scope,
-            redirect_uri: "https://spotify.haakonfinstad.com/signin",
+            redirect_uri: "http://localhost:5173/signin",
             state: state,
             code_challenge_method: 'S256',
             code_challenge: codeChallenge
