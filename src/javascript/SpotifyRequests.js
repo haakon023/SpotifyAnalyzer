@@ -19,28 +19,37 @@ export async function GetSpotifyTrackForPlaylist(token, playlistId) {
     let tracks = [];
     let hasMoreTracks = true;
     let url = 'https://api.spotify.com/v1/playlists/' + playlistId + '/tracks';
-    let request = new Request(url, { method: "GET", headers: { Authorization: 'Bearer ' + token } })
+  
     try {
-        while (hasMoreTracks) {
-            let p = new Promise((resolve, reject) => { 
-                resolve(useFetchCached("playlist", url, request))
-            });
-            p.then(result => result.items.forEach(track => {
-                tracks.push(track)
-                url = result.next;
-            }));
-            
-
-            if (url === null) {
-                hasMoreTracks = false;
-                break;
-            }
+      while (hasMoreTracks) {
+        let request = new Request(url, { method: "GET", headers: { Authorization: 'Bearer ' + token } });
+        var response = await useFetchCached("playlist", url, request);
+        
+        if (!response || !response.items) {
+          console.log("Error: Invalid or empty response");
+          hasMoreTracks = false;
+          break;
         }
+        
+        response.items.forEach(track => {
+          tracks.push(track);
+        });
+        
+        url = response.next;
+  
+        if (!url) {
+          hasMoreTracks = false;
+          break;
+        }
+        
+        await delay(1000);
+      }
     } catch (error) {
-        console.log(error)
+      console.error("Error in GetSpotifyTrackForPlaylist:", error);
     }
-    return tracks
-}
+    
+    return tracks;
+  }
 
 //Fetch spotify playback state
 export async function GetPlaybackState(token) {

@@ -21,8 +21,9 @@
 
 @media (min-width: 1024px) {
   body {
-    background: radial-gradient(circle at bottom right,
-        rgb(69, 69, 69), rgb(37, 37, 37), rgb(21, 21, 21), rgb(0, 0, 0)), 100%;
+    /* background: radial-gradient(circle at bottom right,
+        rgb(69, 69, 69), rgb(37, 37, 37), rgb(21, 21, 21), rgb(0, 0, 0)), 100%; */
+        background-color: black;
     margin: 0px;
     height: 100vh;
     color: rgb(235, 235, 235);

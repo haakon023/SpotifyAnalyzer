@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
+import moment from 'moment';
 
 export const SessionStore = defineStore("SessionStore", {
     state: () => (
-        { session: "no_session", token: "", data: {id: "", name: ""} }
+        { session: "no_session", expires: undefined, token: "", data: {id: "", name: ""} }
     ),
     getters: {
         checkSession: (state) => state.session,
@@ -31,19 +32,9 @@ export const SessionStore = defineStore("SessionStore", {
         },
         //TODO probably move this into own method to add as a decorator
         async checkSessionValid() {
-            //check if has session
-            if (this.token === null || this.token === undefined || this.token === "") {
-                this.session = "no_session"
-                return;
-            }
-            //Check if session has expired
-            //todo figure out how to even do that
-            const response = await fetch('https://api.spotify.com/v1/me', {
-                headers: {
-                    Authorization: 'Bearer ' + this.token
-                }
-            });
-            return response;
+            if(moment() > moment(this.expires))
+                return false;
+            else return true;
         },
         removeSession() {
             this.token = "";

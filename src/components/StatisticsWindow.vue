@@ -13,10 +13,12 @@ export default {
   data() {
     const playlistsCount = ref(0);
     const playlists = ref(0);
-    //const { getSongAmount } = storeToRefs(StatisticsStore());
     const statisticsStore = StatisticsStore();
     const totalTracks = ref(0);
-    const delay = ms => new Promise(res => setTimeout(res, ms));
+    const tracks = ref([]);
+    const uniqueTracks = ref(0);
+    const albums = ref([]);
+    const albumCount = ref(0);
 
     return {
       playlistsCount,
@@ -24,7 +26,10 @@ export default {
       //getSongAmount,
       statisticsStore,
       totalTracks,
-      delay
+      uniqueTracks,
+      tracks,
+      albums,
+      albumCount
     }
   },
   async mounted() {
@@ -37,24 +42,26 @@ export default {
   methods: {
     async initialize() {
       await this.getAmountOfPlaylists()
-      this.getTracks();
+      await this.getTracks();
+      await this.filterTracks();
+      await this.getAlbums();
     },
-    getTracks() {
-      const token = this.token
-      this.allTracks = [];
+    async getTracks() {
+      const token = this.token;
+      let allTracks = [];
+      let dataPromises = [];
+
       for (let i = 0; i < this.playlists.length; i++) {
-        let playlist = this.playlists[i]
+        let playlist = this.playlists[i];
+        dataPromises.push(GetSpotifyTrackForPlaylist(token, playlist.id));
+      }
 
-        let p = new Promise((resolve, reject) => {
-            resolve(GetSpotifyTrackForPlaylist(token, playlist.id));
-          });
+      const dataResponses = await Promise.all(dataPromises);
 
-        p.then((tracks) => {
-          this.totalTracks += tracks.length;
-        });
-
-      this.statisticsStore.setHasData(true);
-      this.statisticsStore.setSongAmount(this.allTracks.length);
+      for (let data of dataResponses) {
+        allTracks.push(data.items);
+        data.forEach(item => this.tracks.push(item));
+        this.totalTracks += data.length;
       }
     },
     async getAmountOfPlaylists() {
@@ -66,6 +73,30 @@ export default {
       } catch (error) {
         console.log(error)
       }
+    },
+    async filterTracks() {
+      let filteredTracks = [];
+      let trackIds = [];
+      for (let track of this.tracks) {
+        if (trackIds.includes(track.track.id)) {
+          continue;
+        }
+        trackIds.push(track.track.id);
+        filteredTracks.push(track);
+      }
+      this.tracks = filteredTracks;
+      this.uniqueTracks = filteredTracks.length;
+    },
+    async getAlbums() {
+      let albumIds = [];
+      for (let track of this.tracks) {
+        if (albumIds.includes(track.track.album.id)) {
+          continue;
+        }
+        albumIds.push(track.track.album.id);
+        this.albums.push(track.track.album);
+      }
+      this.albumCount = this.albums.length;
     },
   },
   computed: {
@@ -94,12 +125,20 @@ export default {
 
     <div class="NumberStatistics">
       <div>
-        <h3># Songs</h3>
+        <h3>Playlists</h3>
+        <p>{{ playlistsCount }}</p>
+      </div>
+      <div>
+        <h3>Total Songs</h3>
         <p>{{ getTrackAmount }}</p>
       </div>
       <div>
-        <h3># Playlists</h3>
-        <p>{{ playlistsCount }}</p>
+        <h3>Unique Tracks</h3>
+        <p>{{ uniqueTracks }}</p>
+      </div>
+      <div>
+        <h3>Unique albums</h3>
+        <p>{{ albumCount }}</p>
       </div>
     </div>
   </div>
