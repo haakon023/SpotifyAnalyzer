@@ -30,7 +30,6 @@ async function getCache(key, url) {
 
         if (!cachedResponse || !cachedResponse.ok)
             return false;
-        console.log("fetching from cache");
         return cachedResponse.json();
 
     } catch (error) {
@@ -42,7 +41,6 @@ async function storeCache(cacheName, url, request) {
     try {
         const cache = await caches.open(cacheName);
         const response = await fetch(request);
-        console.log("fetching from api");
         await cache.put(url, response.clone()); // Use response.clone() to store it and keep it for later use
     } catch (error) {
         console.error(error);

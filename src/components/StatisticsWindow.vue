@@ -3,7 +3,7 @@ import { ref } from 'vue';
 //import { storeToRefs } from 'pinia'
 import RefreshCircle from '../assets/icons/RefreshCircle.vue';
 import { StatisticsStore } from '../stores/StatisticsStore';
-import { GetProfilePlaylists, GetSpotifyTrackForPlaylist } from '../javascript/SpotifyRequests';
+import { GetProfilePlaylists, GetSpotifyTrackForPlaylist, GetAlbums } from '../javascript/SpotifyRequests';
 export default {
   props: {
     title: String,
@@ -19,6 +19,8 @@ export default {
     const uniqueTracks = ref(0);
     const albums = ref([]);
     const albumCount = ref(0);
+    const genreCount = ref(0);
+    const genres = ref([]);
 
     return {
       playlistsCount,
@@ -29,7 +31,9 @@ export default {
       uniqueTracks,
       tracks,
       albums,
-      albumCount
+      albumCount,
+      genreCount,
+      genres
     }
   },
   async mounted() {
@@ -45,6 +49,7 @@ export default {
       await this.getTracks();
       await this.filterTracks();
       await this.getAlbums();
+      await this.getGenres();
     },
     async getTracks() {
       const token = this.token;
@@ -98,6 +103,43 @@ export default {
       }
       this.albumCount = this.albums.length;
     },
+    async getGenres() {
+
+      const albumsIds = [];
+      this.albums.forEach(album => albumsIds.push(album.id));
+      const albumContainer = await GetAlbums(this.token, albumsIds);
+
+      for (let i = 0; i < albumContainer.length; i++) {
+        let albumBulk = albumContainer[i];
+        for (let j = 0; j < albumBulk.length; j++) {
+          let album = albumBulk[j];
+          if (!album) {
+            console.log("does not have an album");
+            continue; // Skip to the next iteration
+          }
+          console.log("has an album")
+          console.log(album.genres + " " + album.name + " " + album.id)
+          for (let k = 0; k < album.genres.length; k++) {
+            let genre = album.genres[k];
+            if (this.genres.includes(genre)) {
+              console.log("already has genre");
+              continue; // Skip to the next iteration
+            }
+            console.log("adding genre");
+            this.genres.push(genre);
+          }
+        }
+      }
+
+
+      console.log(this.genres);
+      this.genres.forEach(genre => {
+        console.log(genre);
+      });
+
+      this.genreCount = this.genres.length;
+
+    }
   },
   computed: {
     getTrackAmount() {
@@ -112,12 +154,7 @@ export default {
     <h2 style="display: inline-block; margin-bottom: 0">
       {{ title
       }}<span style="width: fit-content">
-        <RefreshCircle
-          style="width: 24px; height: 24px"
-          @click="initialize"
-          @emit="$emit('RefreshClicked')"
-          class="icon"
-        >
+        <RefreshCircle style="width: 24px; height: 24px" @click="initialize" @emit="$emit('RefreshClicked')" class="icon">
         </RefreshCircle>
       </span>
     </h2>
@@ -139,6 +176,10 @@ export default {
       <div>
         <h3>Unique albums</h3>
         <p>{{ albumCount }}</p>
+      </div>
+      <div>
+        <h3>Genres</h3>
+        <p>{{ genreCount }}</p>
       </div>
     </div>
   </div>
