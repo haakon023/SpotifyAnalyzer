@@ -13,31 +13,30 @@ export async function GetProfilePlaylists(id, token) {
     return response;
 }
 
-export async function GetAlbums(token, albumIds) {
-    //spotify bulk albums has max 20 album id per request
-    let albums = [];
+export async function GetArtists(token, artistIds) {
+    //spotify bulk artists has max 50 artists ids per request
+    let artists = [];
     try {
-        while(albumIds.length > 0)
+        while(artistIds.length > 0)
         {
-            let albumFilterIds = "";
-            for (let i = 0; i < 20; i++) {
-                if(albumIds.length <= 0)
+            let filteredArtistIds = "";
+            for (let i = 0; i < 50; i++) {
+                if(artistIds.length <= 0)
                     break;
                 
-                albumFilterIds += albumIds.pop() + ",";
+                filteredArtistIds += artistIds.pop() + ",";
             }
-            albumFilterIds = albumFilterIds.slice(0, -1);
-            
-            const url = 'https://api.spotify.com/v1/albums?ids=' + albumFilterIds;
+            filteredArtistIds = filteredArtistIds.slice(0, -1);
+            const url = 'https://api.spotify.com/v1/artists?ids=' + filteredArtistIds;
             let request = new Request(url, { method: "GET", headers: { Authorization: 'Bearer ' + token } })
-            const response = await useFetchCached("album", url, request);
-            if(response && response.albums)
-                albums.push(response.albums);
+            const response = await useFetchCached("artists", url, request);
+            if(response && response.artists)
+                artists.push(response.artists);
         }
     } catch (error) {
         console.log(error);
     }
-    return albums;
+    return artists;
 }
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
