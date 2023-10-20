@@ -4,6 +4,9 @@ import { ref } from 'vue';
 import RefreshCircle from '../assets/icons/RefreshCircle.vue';
 import { StatisticsStore } from '../stores/StatisticsStore';
 import { GetProfilePlaylists, GetSpotifyTrackForPlaylist, GetArtists } from '../javascript/SpotifyRequests';
+import { Bar } from 'vue-chartjs'
+import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, BarController } from 'chart.js'
+
 export default {
   props: {
     title: String,
@@ -19,9 +22,13 @@ export default {
     const uniqueTracks = ref(0);
     const albums = ref([]);
     const albumCount = ref(0);
-    const genreCount = ref(0);
+    const uniqueGenreCount = ref(0);
     const uniqueGenres = ref([]);
-    const genres = ref([])
+    const genres = ref([]);
+    const uniqueArtists = ref([]);
+    const genreDistribution = ref({});
+    const topGenres = ref({});
+
     return {
       playlistsCount,
       playlists,
@@ -32,18 +39,24 @@ export default {
       tracks,
       albums,
       albumCount,
-      genreCount,
+      genreCount: uniqueGenreCount,
       uniqueGenres,
-      genres
+      genres,
+      genreDistribution,
+      uniqueArtists,
+      topGenres
     }
   },
   async mounted() {
     await this.initialize();
 
+    ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
+
   },
   components: {
     RefreshCircle,
-  },
+    Bar
+},
   methods: {
     async initialize() {
       await this.getAmountOfPlaylists()
@@ -51,6 +64,7 @@ export default {
       await this.filterTracks();
       await this.getAlbums();
       await this.getGenres();
+      await this.processGenres();
     },
     async getTracks() {
       const token = this.token;
@@ -107,7 +121,6 @@ export default {
     async getGenres() {
 
       const artistIds = [];
-      // this.tracks.forEach(track => if(artistIds.includes(track.atist)));
 
       for (let track of this.tracks) {
         for (let artist of track.track.artists) {
@@ -126,6 +139,14 @@ export default {
           if (!artist) {
             continue; // Skip to the next iteration
           }
+
+          //Add artist to unique artists
+          if (!this.uniqueArtists.includes(artist)) {
+            this.uniqueArtists.push(artist);
+          }
+
+
+          //Add unique genre per artist in unique genres
           for (let k = 0; k < artist.genres.length; k++) {
             let genre = artist.genres[k];
             this.genres.push(genre);
@@ -139,11 +160,34 @@ export default {
 
       this.genreCount = this.uniqueGenres.length;
 
+    },
+    async processGenres() {
+      let genreDistribution = {}
+      //Get total genres per genre
+      for (let genre of this.genres) {
+        if (genreDistribution[genre]) {
+          genreDistribution[genre] = { 'count': genreDistribution[genre].count + 1, 'percentage': (genreDistribution[genre].count / this.genres.length) * 100 };
+        }
+        else {
+          genreDistribution[genre] = { 'count': 1, 'percentage': 0 };
+        }
+      }
+
+      this.genreDistribution = genreDistribution;
+
+      //Get top 10 of genre distributions
+      let sortedGenres = Object.entries(genreDistribution).sort((a, b) => b[1].count - a[1].count);
+      let top10Genres = sortedGenres.slice(0, 10);
+
+      this.topGenres = Object.fromEntries(top10Genres);
     }
   },
   computed: {
     getTrackAmount() {
       return this.totalTracks;
+    },
+    getArtistCount() {
+      return this.uniqueArtists.length;
     }
   }
 }
@@ -154,12 +198,7 @@ export default {
     <h2 style="display: inline-block; margin-bottom: 0">
       {{ title
       }}<span style="width: fit-content">
-        <RefreshCircle
-          style="width: 24px; height: 24px"
-          @click="initialize"
-          @emit="$emit('RefreshClicked')"
-          class="icon"
-        >
+        <RefreshCircle style="width: 24px; height: 24px" @click="initialize" @emit="$emit('RefreshClicked')" class="icon">
         </RefreshCircle>
       </span>
     </h2>
@@ -171,7 +210,7 @@ export default {
         <p>{{ playlistsCount }}</p>
       </div>
       <div>
-        <h3>Total Songs</h3>
+        <h3>Tracks In Total</h3>
         <p>{{ getTrackAmount }}</p>
       </div>
       <div>
@@ -179,13 +218,21 @@ export default {
         <p>{{ uniqueTracks }}</p>
       </div>
       <div>
-        <h3>Unique albums</h3>
+        <h3>Unique Albums</h3>
         <p>{{ albumCount }}</p>
       </div>
       <div>
-        <h3>Unique genres</h3>
+        <h3>Unique Artists</h3>
+        <p>{{ getArtistCount }}</p>
+      </div>
+      <div>
+        <h3>Unique Genres</h3>
         <p>{{ genreCount }}</p>
       </div>
+    </div>
+    <div class="charts">
+      <Bar>
+      </Bar>
     </div>
   </div>
 </template>
